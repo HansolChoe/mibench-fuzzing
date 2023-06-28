@@ -1958,8 +1958,11 @@ corner_list[n].info=7;
 
 /* }}} */
 /* {{{ main(argc, argv) */
-
-main(argc, argv)
+#if defined (AFL) || defined (GCOV)
+void susan_main(argc, argv)
+#else
+void main(argc, argv)
+#endif
   int   argc;
   char  *argv [];
 {
