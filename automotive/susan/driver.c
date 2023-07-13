@@ -8,9 +8,18 @@
 #define FILE_NAME_SIZE 1024
 
 #ifdef GCOV
-extern void __gcov_flush();
+#if __GNUC__ < 11
+    extern void __gcov_flush();
+#else
+    extern void __gcov_dump();
+#endif
+
 void sighandler(int sig) {
+#if __GNUC__ < 11
     __gcov_flush();
+#else
+    __gcov_dump();
+#endif
     fprintf(stderr, "sig: %d", sig);
     exit(sig);
 }
@@ -66,14 +75,23 @@ int main(int argc, char *argv[]) {
     char output_file_name[FILE_NAME_SIZE];
     snprintf(output_file_name, sizeof(output_file_name), "/tmp/%s_out", basename(argv[1]));
 
-    char *cmd_line[5];
+    char **cmd_line = malloc(sizeof(char *) * (BUFFER_SIZE / 2)); // 최대 토큰 개수를 대비하여 메모리를 할당합니다.
     cmd_line[0] = "./susan";
-    cmd_line[1] = test_file_name;
+    cmd_line[1]= test_file_name;
     cmd_line[2] = output_file_name;
-    cmd_line[3] = cmd;
-    cmd_line[4] = NULL;
 
-    susan_main(4, cmd_line);  // susan_main 함수를 직접 호출
+    // 공백에 따라 cmd를 나눕니다.
+    int index = 3;
+    char *token = strtok(cmd, " ");
+    while (token != NULL) {
+        cmd_line[index++] = token;
+        token = strtok(NULL, " ");
+    }
+    cmd_line[index] = NULL; // 마지막에 NULL 포인터를 추가합니다.
+
+    susan_main(index, cmd_line);  // susan_main 함수를 직접 호출
+
+    free(cmd_line);  // 할당한 메모리를 해제합니다.
 
     return 0;
 }

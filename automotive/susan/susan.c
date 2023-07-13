@@ -1995,7 +1995,6 @@ CORNER_LIST corner_list;
   get_image(argv[1],&in,&x_size,&y_size);
 
   /* {{{ look at options */
-
   while (argindex < argc)
   {
     tcp = argv[argindex];
